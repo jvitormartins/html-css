@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prova Paraná 2ª Ed 2025 - Matemática: Análise Pedagógica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #475569; /* slate-600 */
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: #0033A0; /* Azul Institucional */
+            border-bottom-color: #0033A0;
+        }
+        .tab-content, .resolution-details, .gemini-card {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .question-card {
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+    
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#0033A0]">Prova Paraná 2ª Ed 2025</h1>
+            <p class="text-3xl md:text-4xl font-semibold text-[#0033A0] mb-3">Matemática</p>
+            <p class="text-sm text-slate-600">Elaborado por <i>Profº J. Vitor Martins</i></p>
+        </header>
+
+        <nav class="flex justify-center border-b mb-8 flex-wrap">
+            <button class="tab-btn active" data-tab="inicio">Análise Geral</button>
+            <button class="tab-btn" data-tab="ano6">6º Ano</button>
+            <button class="tab-btn" data-tab="ano7">7º Ano</button>
+            <button class="tab-btn" data-tab="ano8">8º Ano</button>
+            <button class="tab-btn" data-tab="ano9">9º Ano</button>
+            <button class="tab-btn" data-tab="gabaritos">Gabaritos</button>
+        </nav>
+
+        <div id="inicio" class="tab-content">
+            <main class="space-y-16">
+                 <section id="geral">
+                    <h2 class="text-3xl font-bold text-[#0033A0] mb-4 text-center">Estrutura Geral da Análise</h2>
+                    <p class="text-center max-w-3xl mx-auto mb-10 text-slate-600">
+                        Esta análise foca nas 80 questões de Matemática da prova, distribuídas entre o 6º e o 9º ano. O conteúdo abrange quatro grandes eixos temáticos, com um forte equilíbrio entre 'Aritmética & Álgebra' e 'Geometria & Grandezas', indicando uma abordagem curricular abrangente na disciplina.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div class="flex flex-col space-y-6">
+                            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                <h3 class="text-xl font-semibold text-slate-800">Questões Analisadas</h3>
+                                <p class="text-5xl font-bold text-[#0033A0]">80</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                <h3 class="text-xl font-semibold text-slate-800">Anos Escolares</h3>
+                                <p class="text-5xl font-bold text-[#009639]">4</p>
+                            </div>
+                             <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                <h3 class="text-xl font-semibold text-slate-800">Eixos Temáticos</h3>
+                                <p class="text-5xl font-bold text-[#FFB300]">4</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="chart-container">
+                                <canvas id="temasGeralChart"></canvas>
+                            </div>
+                            <p class="text-center text-sm mt-2 text-slate-500">Distribuição temática para o total de 80 questões.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="por-ano">
+                    <h2 class="text-3xl font-bold text-[#0033A0] mb-4 text-center">Evolução do Conteúdo por Ano Escolar</h2>
+                    <p class="text-center max-w-3xl mx-auto mb-10 text-slate-600">
+                        A complexidade e o foco dos temas evoluem significativamente do 6º ao 9º ano. A análise mostra a transição de conceitos aritméticos fundamentais e grandezas no 6º e 7º ano para a crescente abstração da álgebra e a complexidade da geometria no 8º e 9º ano.
+                    </p>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="chart-container" style="max-width: 900px; height: 450px;">
+                            <canvas id="temasPorAnoChart"></canvas>
+                        </div>
+                        <p class="text-center text-sm mt-2 text-slate-500">Quantidade de questões de cada tema por ano escolar.</p>
+                    </div>
+                </section>
+
+                <section id="dificuldade">
+                     <h2 class="text-3xl font-bold text-[#0033A0] mb-4 text-center">Análise do Nível de Dificuldade</h2>
+                     <p class="text-center max-w-3xl mx-auto mb-10 text-slate-600">
+                        Classificamos cada questão em três níveis para mapear a exigência cognitiva da prova. O 6º ano concentra-se em questões de dificuldade fácil e média. A partir do 7º ano, a complexidade aumenta, com o 9º ano apresentando o maior número de questões consideradas difíceis.
+                    </p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div class="chart-container">
+                                <canvas id="dificuldadePorAnoChart"></canvas>
+                            </div>
+                            <p class="text-center text-sm mt-2 text-slate-500">Perfil de dificuldade para cada ano escolar.</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div class="chart-container" style="height: 450px;">
+                                <canvas id="dificuldadePorTemaChart"></canvas>
+                            </div>
+                            <p class="text-center text-sm mt-2 text-slate-500">Distribuição da dificuldade dentro de cada eixo temático.</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <div id="ano6" class="tab-content hidden">
+            <h2 class="text-3xl font-bold text-[#0033A0] mb-8 text-center">Questões - 6º Ano</h2>
+            <div class="space-y-6"></div>
+        </div>
+        <div id="ano7" class="tab-content hidden">
+            <h2 class="text-3xl font-bold text-[#0033A0] mb-8 text-center">Questões - 7º Ano</h2>
+            <div class="space-y-6"></div>
+        </div>
+        <div id="ano8" class="tab-content hidden">
+            <h2 class="text-3xl font-bold text-[#0033A0] mb-8 text-center">Questões - 8º Ano</h2>
+            <div class="space-y-6"></div>
+        </div>
+        <div id="ano9" class="tab-content hidden">
+            <h2 class="text-3xl font-bold text-[#0033A0] mb-8 text-center">Questões - 9º Ano</h2>
+            <div class="space-y-6"></div>
+        </div>
+
+        <div id="gabaritos" class="tab-content hidden">
+            <h2 class="text-3xl font-bold text-[#0033A0] mb-8 text-center">Gabaritos</h2>
+            <div class="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                    <div class="w-full sm:w-auto">
+                        <label for="gabarito-select" class="block text-sm font-medium text-slate-700">Selecione a Turma:</label>
+                        <select id="gabarito-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#009639] focus:border-[#009639] sm:text-sm rounded-md">
+                            <option value="todos">Todas as turmas</option>
+                            <option value="ano6">6º Ano</option>
+                            <option value="ano7">7º Ano</option>
+                            <option value="ano8">8º Ano</option>
+                            <option value="ano9">9º Ano</option>
+                        </select>
+                    </div>
+                    <button id="download-pdf-btn" class="w-full sm:w-auto mt-4 sm:mt-0 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#009639] hover:bg-[#006426]">
+                        Download PDF
+                    </button>
+                </div>
+                <div id="gabarito-content-container" class="border-t pt-4">
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-16 py-6 border-t">
+            <p class="text-slate-500 text-xs">Análise gerada a partir do gabarito comentado da Prova Paraná (2ª Ed. 2025)</p>
+            <p class="text-slate-500 text-xs">Elaborado por <i class="font-normal">Profº J. Vitor Martins</i> com uso de IA Gemini.</p>
+        </footer>
+    </div>
+
+    <script>
+        const fullQuestionsData = {
+             ano6: [
+                { id: "6_1", q: "1. (MT6201PR25) Xadrez...", a: ["a) (4, G)", "..."], r: "a", res: ["..."] }, { id: "6_2", q: "2. (MT6202PR25) Observe a imagem...", a: ["a) 1B, 2A e 3C.", "..."], r: "c", res: ["..."] }, { id: "6_3", q: "3. (MT6205PR25) O professor Leandro...", a: ["..."], r: "d", res: ["..."] }, { id: "6_4", q: "4. (MT6218PR25) O professor de Matemática...", a: ["..."], r: "a", res: ["..."] }, { id: "6_5", q: "5. (MT6215PR25) O voo de Ana...", a: ["..."], r: "b", res: ["..."] }, { id: "6_6", q: "6. (MT6212PR25) O perímetro da sala...", a: ["..."], r: "d", res: ["..."] }, { id: "6_7", q: "7. (MT6213PR25) Qual será a área...", a: ["..."], r: "b", res: ["..."] }, { id: "6_8", q: "8. (MT6228PR25) Observe o anúncio...", a: ["..."], r: "a", res: ["..."] }, { id: "6_9", q: "9. (MT6217PR25) O professor de Matemática...", a: ["..."], r: "d", res: ["..."] }, { id: "6_10", q: "10. (MT6119PR24) Em um estádio...", a: ["..."], r: "d", res: ["..."] }, { id: "6_11", q: "11. (MT6221PR25) Observe as atividades...", a: ["..."], r: "c", res: ["..."] }, { id: "6_12", q: "12. (MT6221PR25) No alfabeto...", a: ["..."], r: "c", res: ["..."] }, { id: "6_13", q: "13. (MT6223PR25) O professor de Matemática...", a: ["..."], r: "b", res: ["..."] }, { id: "6_14", q: "14. (MT6224PR25) Após economizar...", a: ["..."], r: "a", res: ["..."] }, { id: "6_15", q: "15. (MT6225PR25) Em um jogo de quiz...", a: ["..."], r: "b", res: ["..."] }, { id: "6_16", q: "16. (MT6208PR25) Observe as cartas...", a: ["..."], r: "c", res: ["..."] }, { id: "6_17", q: "17. (MT6226PR25) Dos computadores...", a: ["..."], r: "c", res: ["..."] }, { id: "6_18", q: "18. (MT6101PR24) Um mapa de estrelas...", a: ["..."], r: "a", res: ["..."] }, { id: "6_19", q: "19. (MT6228PR25) Na turma do 8º ano...", a: ["..."], r: "d", res: ["..."] }, { id: "6_20", q: "20. (MT6137PR24) Observe a tabela...", a: ["..."], r: "b", res: ["..."] }
+            ],
+            ano7: [
+                { id: "7_1", q: "1. (MT7101PR24) Observe o tabuleiro...", a: ["..."], r: "c", res: ["..."] }, { id: "7_2", q: "2. (MT7203PR25) Observe o Triângulo...", a: ["..."], r: "b", res: ["..."] }, { id: "7_3", q: "3. (MT7206PR25) Ao entrar em uma cidade...", a: ["..."], r: "c", res: ["..."] }, { id: "7_4", q: "4. (MT7208PR25) Marcelo comprou...", a: ["..."], r: "c", res: ["..."] }, { id: "7_5", q: "5. (MT7118PR24) Bruno tinha 26...", a: ["..."], r: "a", res: ["..."] }, { id: "7_6", q: "6. (MT7212PR25) Um construtor...", a: ["..."], r: "c", res: ["..."] }, { id: "7_7", q: "7. (MT7217PR25) Observe o posicionamento...", a: ["..."], r: "b", res: ["..."] }, { id: "7_8", q: "8. (MT7219PR25) Ao participar de um curso...", a: ["..."], r: "d", res: ["..."] }, { id: "7_9", q: "9. (MT7118PR24) Observe a tabela...", a: ["..."], r: "b", res: ["..."] }, { id: "7_10", q: "10. (MT7220PR25) Igor elaborou...", a: ["..."], r: "a", res: ["..."] }, { id: "7_11", q: "11. (MT7222PR25) Commodities...", a: ["..."], r: "c", res: ["..."] }, { id: "7_12", q: "12. (MT7223PR25) O professor de Matemática...", a: ["..."], r: "b", res: ["..."] }, { id: "7_13", q: "13. (MT7224PR25) O finlandês Valtteri Bottas...", a: ["..."], r: "d", res: ["..."] }, { id: "7_14", q: "14. (MT7225PR25) Um professor de Matemática...", a: ["..."], r: "a", res: ["..."] }, { id: "7_15", q: "15. (MT7236PR25) A tabela a seguir...", a: ["..."], r: "b", res: ["..."] }, { id: "7_16", q: "16. (MT7228PR25) Para ir a um acampamento...", a: ["..."], r: "a", res: ["..."] }, { id: "7_17", q: "17. (MT7228PR25) No Campeonato Paranaense...", a: ["..."], r: "d", res: ["..."] }, { id: "7_18", q: "18. (MT7227PR25) Observe a planta baixa...", a: ["..."], r: "c", res: ["..."] }, { id: "7_19", q: "19. (MT7230PR25) Nos procedimentos...", a: ["..."], r: "a", res: ["..."] }, { id: "7_20", q: "20. (MT7237PR25) Cerca de 30 países...", a: ["..."], r: "c", res: ["..."] }
+            ],
+            ano8: [
+                { id: "8_1", q: "1. (MT8212PR25) De acordo com as informações...", a: ["..."], r: "d", res: ["..."] }, { id: "8_2", q: "2. (MT8212PR25) De acordo com as informações...", a: ["..."], r: "d", res: ["..."] }, { id: "8_3", q: "3. (MT8214PR25) A embalagem longa vida...", a: ["..."], r: "b", res: ["..."] }, { id: "8_4", q: "4. (MT8225PR25) A professora do 8º ano...", a: ["..."], r: "c", res: ["..."] }, { id: "8_5", q: "5. (MT8226PR25) O extinto Autódromo...", a: ["..."], r: "c", res: ["..."] }, { id: "8_6", q: "6. (MT8228PR25) Christoffer, professor...", a: ["..."], r: "a", res: ["..."] }, { id: "8_7", q: "7. (MT8230PR25) O custo de um plano...", a: ["..."], r: "a", res: ["..."] }, { id: "8_8", q: "8. (MT8232PR25) Observe a sequência...", a: ["..."], r: "b", res: ["..."] }, { id: "8_9", q: "9. (MT8233PR25) O custo de cada viagem...", a: ["..."], r: "a", res: ["..."] }, { id: "8_10", q: "10. (MT81252PR25) No livro de Matemática...", a: ["..."], r: "d", res: ["..."] }, { id: "8_11", q: "11. (MT8235PR25) Observe as retas...", a: ["..."], r: "c", res: ["..."] }, { id: "8_12", q: "12. (MT8216PR25) A balança a seguir...", a: ["..."], r: "b", res: ["..."] }, { id: "8_13", q: "13. (MT8224PR25) Observe o terreno...", a: ["..."], r: "a", res: ["..."] }, { id: "8_14", q: "14. (MT82242PR25) Muitas vezes a manteiga...", a: ["..."], r: "c", res: ["..."] }, { id: "8_15", q: "15. (MT82406PR25) Ao comprar um tênis...", a: ["..."], r: "d", res: ["..."] }, { id: "8_16", q: "16. (MT8238PR25) Leonardo tem o dobro...", a: ["..."], r: "b", res: ["..."] }, { id: "8_17", q: "17. (MT8234PR25) Suponha que, para a final...", a: ["..."], r: "d", res: ["..."] }, { id: "8_18", q: "18. (MT8263PR25) O consumo médio...", a: ["..."], r: "d", res: ["..."] }, { id: "8_19", q: "19. (MT82332PR25) Um ônibus transporta...", a: ["..."], r: "b", res: ["..."] }, { id: "8_20", q: "20. (MT8128PR25) Observe a promoção...", a: ["..."], r: "c", res: ["..."] }
+            ],
+            ano9: [
+                { id: "9_1", q: "1. (MT9203PR25) Para que o triângulo...", a: ["..."], r: "d", res: ["..."] }, { id: "9_2", q: "2. (MT9204PR25) Ao analisar um quadrilátero...", a: ["..."], r: "d", res: ["..."] }, { id: "9_3", q: "3. (MT9205PR25) Cada quadrado da malha...", a: ["..."], r: "a", res: ["..."] }, { id: "9_4", q: "4. (MT9129PR25) Uma empresa de impressão...", a: ["..."], r: "b", res: ["..."] }, { id: "9_5", q: "5. (MT9207PR25) Na homotetia a seguir...", a: ["..."], r: "d", res: ["..."] }, { id: "9_6", q: "6. (MT9229PR25) Seis tripulantes...", a: ["..."], r: "c", res: ["..."] }, { id: "9_7", q: "7. (MT9208PR25) O Pentágono...", a: ["..."], r: "b", res: ["..."] }, { id: "9_8", q: "8. (MT9200PR25) As cidades de Washington...", a: ["..."], r: "b", res: ["..."] }, { id: "9_9", q: "9. (MT92010PR25) O mapa a seguir...", a: ["..."], r: "a", res: ["..."] }, { id: "9_10", q: "10. (MT9211PR25) A London Eye...", a: ["..."], r: "b", res: ["..."] }, { id: "9_11", q: "11. (MT9212PR25) O perímetro em centímetros...", a: ["..."], r: "d", res: ["..."] }, { id: "9_12", q: "12. (MT9213PR25) Sabendo que a área...", a: ["..."], r: "c", res: ["..."] }, { id: "9_13", q: "13. (MT9214PR25) As piscinas olímpicas...", a: ["..."], r: "c", res: ["..."] }, { id: "9_14", q: "14. (MT9215PR25) O ônibus espacial...", a: ["..."], r: "b", res: ["..."] }, { id: "9_15", q: "15. (MT9228PR25) A saca de café...", a: ["..."], r: "d", res: ["..."] }, { id: "9_16", q: "16. (MT9226PR25) O temido Capitão Racional...", a: ["..."], r: "d", res: ["..."] }, { id: "9_17", q: "17. (MT9227PR25) O número de ouro...", a: ["..."], r: "c", res: ["..."] }, { id: "9_18", q: "18. (MT9118PR25) Cristina está à procura...", a: ["..."], r: "a", res: ["..."] }, { id: "9_19", q: "19. (MT9231PR25) A Kings League Brasil...", a: ["..."], r: "c", res: ["..."] }, { id: "9_20", q: "20. (MT9126PR25) Giovana quer renovar...", a: ["..."], r: "d", res: ["..."] }
+            ]
+        };
+
+        async function callGeminiAPI(originalQuestion, mode = 'similar') {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            
+            let systemPrompt, userPrompt, responseSchema;
+
+            if (mode === 'similar') {
+                systemPrompt = `Você é um professor de matemática especialista em criar questões para avaliações. Sua tarefa é criar uma nova questão de múltipla escolha que seja similar à questão original fornecida. A nova questão deve abordar o mesmo conceito matemático, mas usar números e um contexto ligeiramente diferentes. Mantenha o mesmo nível de dificuldade. A resposta correta deve ser sempre a alternativa 'a'. Retorne a resposta APENAS no formato JSON, conforme o esquema especificado, sem nenhum texto ou formatação adicional.`;
+                userPrompt = `Questão Original: "${originalQuestion.q}" Alternativas Originais: ${JSON.stringify(originalQuestion.a)}. Crie uma questão similar.`;
+                responseSchema = { type: "OBJECT", properties: { "q": { "type": "STRING" }, "a": { "type": "ARRAY", "items": { "type": "STRING" } }, "res": { "type": "ARRAY", "items": { "type": "STRING" } } }, required: ["q", "a", "res"] };
+            } else { // explain mode
+                systemPrompt = `Você é um professor de matemática especialista em didática. Sua tarefa é identificar o principal conceito matemático da questão fornecida e explicá-lo de forma clara e concisa em um único parágrafo. A explicação deve ser teórica e acessível para um estudante do nível da questão. Não resolva o problema, apenas explique o conceito por trás dele. Retorne a resposta APENAS no formato JSON com uma única chave "explanation".`;
+                userPrompt = `Questão: "${originalQuestion.q}"`;
+                responseSchema = { type: "OBJECT", properties: { "explanation": { "type": "STRING" } }, required: ["explanation"] };
+            }
+
+            const payload = { contents: [{ parts: [{ text: userPrompt }] }], systemInstruction: { parts: [{ text: systemPrompt }] }, generationConfig: { responseMimeType: "application/json", responseSchema: responseSchema } };
+            
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+                const result = await response.json();
+                const jsonText = result.candidates[0].content.parts[0].text;
+                return JSON.parse(jsonText);
+            } catch (error) {
+                console.error("Erro na chamada da API Gemini:", error);
+                return null;
+            }
+        }
+
+        function createQuestionCard(qData) {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-lg shadow-md cursor-pointer transition hover:shadow-lg question-card';
+            card.dataset.correct = qData.r;
+            card.dataset.id = qData.id;
+
+            const questionText = document.createElement('p');
+            questionText.className = 'font-semibold mb-4';
+            questionText.textContent = qData.q;
+            card.appendChild(questionText);
+
+            const optionsList = document.createElement('div');
+            optionsList.className = 'space-y-2 mb-4 question-options';
+            qData.a.forEach(opt => {
+                const option = document.createElement('p');
+                option.className = 'text-gray-700 transition-colors';
+                option.textContent = opt;
+                optionsList.appendChild(option);
+            });
+            card.appendChild(optionsList);
+
+            const resolutionContainer = document.createElement('div');
+            resolutionContainer.className = 'resolution-details hidden mt-4 border-t-2 border-gray-100 pt-4';
+            
+            const resultTitle = document.createElement('p');
+            resultTitle.className = 'font-bold text-[#0033A0]';
+            resultTitle.textContent = '✅ Resolução Detalhada:';
+            resolutionContainer.appendChild(resultTitle);
+
+            const resolutionList = document.createElement('div');
+            resolutionList.className = 'space-y-1 mt-2 pl-4 text-sm';
+            qData.res.forEach(step => {
+                const stepItem = document.createElement('p');
+                stepItem.innerHTML = `• ${step}`;
+                resolutionList.appendChild(stepItem);
+            });
+            resolutionContainer.appendChild(resolutionList);
+            
+             const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'flex flex-wrap gap-4 mt-4';
+            
+            const geminiButton = document.createElement('button');
+            geminiButton.className = 'gemini-btn flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#0033A0] hover:bg-[#002275] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0033A0]';
+            geminiButton.innerHTML = '✨ Criar Questão Similar';
+            buttonsContainer.appendChild(geminiButton);
+
+            const geminiExplainButton = document.createElement('button');
+            geminiExplainButton.className = 'gemini-explain-btn flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#009639] hover:bg-[#006426] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009639]';
+            geminiExplainButton.innerHTML = '✨ Explicar Conceito Chave';
+            buttonsContainer.appendChild(geminiExplainButton);
+
+            resolutionContainer.appendChild(buttonsContainer);
+
+            const geminiResultContainer = document.createElement('div');
+            geminiResultContainer.className = 'gemini-result-container mt-4 hidden';
+            resolutionContainer.appendChild(geminiResultContainer);
+            
+            const geminiExplanationContainer = document.createElement('div');
+            geminiExplanationContainer.className = 'gemini-explanation-container mt-4 hidden';
+            resolutionContainer.appendChild(geminiExplanationContainer);
+
+            card.appendChild(resolutionContainer);
+            return card;
+        }
+
+        function populateTabs() {
+            Object.keys(fullQuestionsData).forEach(ano => {
+                const container = document.getElementById(ano)?.querySelector('.space-y-6');
+                if (container) {
+                    container.innerHTML = '';
+                    fullQuestionsData[ano].forEach(q => {
+                         const card = createQuestionCard(q);
+                         container.appendChild(card);
+                    });
+                }
+            });
+        }
+        
+        function populateGabaritos() {
+            const container = document.getElementById('gabarito-content-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const todosGabaritoDiv = document.createElement('div');
+            todosGabaritoDiv.id = 'gabarito-todos';
+            
+            Object.keys(fullQuestionsData).forEach(ano => {
+                const anoTitle = document.createElement('h4');
+                anoTitle.className = 'text-lg font-bold mt-4 mb-2 text-[#0033A0]';
+                let anoText = `${ano.replace('ano', '')}º Ano`;
+                anoTitle.textContent = anoText;
+                todosGabaritoDiv.appendChild(anoTitle);
+
+                const list = document.createElement('ol');
+                list.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-center';
+                
+                fullQuestionsData[ano].forEach((q, qIndex) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'p-2 bg-gray-100 rounded';
+                    listItem.innerHTML = `${qIndex + 1} - <span class="font-bold text-[#0033A0]">${q.r.toUpperCase()}</span>`;
+                    list.appendChild(listItem);
+                });
+                todosGabaritoDiv.appendChild(list);
+
+                const individualGabaritoDiv = document.createElement('div');
+                individualGabaritoDiv.id = `gabarito-${ano}`;
+                individualGabaritoDiv.classList.add('hidden');
+                individualGabaritoDiv.appendChild(list.cloneNode(true));
+                container.appendChild(individualGabaritoDiv);
+            });
+            container.prepend(todosGabaritoDiv);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            populateTabs();
+            populateGabaritos();
+
+            const THEME_COLORS = { 'Aritmética': '#0033A0', 'Álgebra': '#475569', 'Geometria': '#009639', 'Grandezas e Medidas': '#94a3b8' };
+            const DIFFICULTY_COLORS = { 'Fácil': '#009639', 'Médio': '#FFB300', 'Difícil': '#D32F2F' };
+
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) { return label.join(' '); }
+                return label;
+            };
+
+            const defaultOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { font: { family: "'Inter', sans-serif", size: 12 } } }, tooltip: { callbacks: { title: tooltipTitleCallback }, bodyFont: { family: "'Inter', sans-serif" }, titleFont: { family: "'Inter', sans-serif" } } }, scales: { x: { ticks: { font: { family: "'Inter', sans-serif" } } }, y: { ticks: { font: { family: "'Inter', sans-serif" } } } } };
+            const data = { '6º Ano': { 'Aritmética': 9, 'Álgebra': 2, 'Geometria': 5, 'Grandezas e Medidas': 4, 'Fácil': 10, 'Médio': 9, 'Difícil': 1 }, '7º Ano': { 'Aritmética': 6, 'Álgebra': 4, 'Geometria': 6, 'Grandezas e Medidas': 4, 'Fácil': 7, 'Médio': 10, 'Difícil': 3 }, '8º Ano': { 'Aritmética': 4, 'Álgebra': 8, 'Geometria': 5, 'Grandezas e Medidas': 3, 'Fácil': 5, 'Médio': 11, 'Difícil': 4 }, '9º Ano': { 'Aritmética': 3, 'Álgebra': 7, 'Geometria': 6, 'Grandezas e Medidas': 4, 'Fácil': 4, 'Médio': 10, 'Difícil': 6 } };
+            const totalThemes = { 'Aritmética': 22, 'Álgebra': 21, 'Geometria': 22, 'Grandezas e Medidas': 15 };
+            
+            new Chart(document.getElementById('temasGeralChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(totalThemes), datasets: [{ data: Object.values(totalThemes), backgroundColor: Object.values(THEME_COLORS), borderColor: '#f8fafc', borderWidth: 4 }] }, options: { ...defaultOptions, scales: { x: { display: false }, y: { display: false } } } });
+            new Chart(document.getElementById('temasPorAnoChart').getContext('2d'), { type: 'bar', data: { labels: ['6º Ano', '7º Ano', '8º Ano', '9º Ano'], datasets: Object.keys(THEME_COLORS).map(theme => ({ label: theme, data: Object.keys(data).map(year => data[year][theme]), backgroundColor: THEME_COLORS[theme] })) }, options: { ...defaultOptions, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } } });
+            new Chart(document.getElementById('dificuldadePorAnoChart').getContext('2d'), { type: 'radar', data: { labels: ['6º Ano', '7º Ano', '8º Ano', '9º Ano'], datasets: Object.keys(DIFFICULTY_COLORS).map(level => ({ label: level, data: Object.keys(data).map(year => data[year][level]), backgroundColor: DIFFICULTY_COLORS[level].replace(')', ', 0.2)').replace('rgb', 'rgba'), borderColor: DIFFICULTY_COLORS[level], pointBackgroundColor: DIFFICULTY_COLORS[level], pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: DIFFICULTY_COLORS[level] })) }, options: { ...defaultOptions, scales: { r: { beginAtZero: true, ticks: { backdropColor: 'transparent' } } } } });
+            const totalDifficultiesByTheme = { 'Aritmética': {'Fácil': 12, 'Médio': 8, 'Difícil': 2}, 'Álgebra': {'Fácil': 4, 'Médio': 11, 'Difícil': 6}, 'Geometria': {'Fácil': 7, 'Médio': 10, 'Difícil': 5}, 'Grandezas e Medidas': {'Fácil': 3, 'Médio': 11, 'Difícil': 1} };
+            new Chart(document.getElementById('dificuldadePorTemaChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(totalDifficultiesByTheme), datasets: Object.keys(DIFFICULTY_COLORS).map(level => ({ label: level, data: Object.keys(totalDifficultiesByTheme).map(theme => totalDifficultiesByTheme[theme][level]), backgroundColor: DIFFICULTY_COLORS[level] })) }, options: { ...defaultOptions, indexAxis: 'y', scales: { x: { stacked: true, beginAtZero: true }, y: { stacked: true } } } });
+            
+            const tabs = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    tabContents.forEach(content => { content.id === target ? content.classList.remove('hidden') : content.classList.add('hidden'); });
+                });
+            });
+
+            document.body.addEventListener('click', function(event) {
+                const card = event.target.closest('.question-card');
+                if (event.target.closest('.gemini-btn') || event.target.closest('.gemini-explain-btn')) return; 
+                if (!card) return;
+
+                const resolution = card.querySelector('.resolution-details');
+                const options = card.querySelectorAll('.question-options p');
+                const correctOptionChar = card.dataset.correct;
+                const isRevealed = !resolution.classList.contains('hidden');
+
+                resolution.classList.toggle('hidden');
+                options.forEach(opt => {
+                    opt.classList.remove('font-bold', 'text-[#009639]');
+                    if (!isRevealed && opt.textContent.trim().startsWith(correctOptionChar + ')')) {
+                        opt.classList.add('font-bold', 'text-[#009639]');
+                    }
+                });
+            });
+
+            document.body.addEventListener('click', async function(event) {
+                const button = event.target.closest('.gemini-btn');
+                if (!button) return;
+
+                const card = button.closest('.question-card');
+                const resultContainer = card.querySelector('.gemini-result-container');
+                const questionId = card.dataset.id;
+                const [ano, qIndex] = questionId.split('_');
+                const originalQuestion = fullQuestionsData[`ano${ano}`][qIndex-1];
+
+                button.textContent = 'Gerando...';
+                button.disabled = true;
+                resultContainer.innerHTML = `<p class="text-center text-slate-500">Aguarde, a IA está criando sua questão...</p>`;
+                resultContainer.classList.remove('hidden');
+
+                const generatedData = await callGeminiAPI(originalQuestion, 'similar');
+
+                if (generatedData && generatedData.q) {
+                    resultContainer.innerHTML = `
+                        <div class="gemini-card mt-4 border-2 border-dashed border-[#0033A0] bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-[#0033A0] mb-2">✨ Questão Gerada pelo Gemini</h4>
+                            <p class="font-semibold mb-3">${generatedData.q}</p>
+                            <div class="space-y-2 mb-3">
+                                ${generatedData.a.map((opt, index) => `<p class="${index === 0 ? 'font-bold text-green-700' : ''}">${opt}</p>`).join('')}
+                            </div>
+                            <p class="font-bold text-sm text-[#0033A0]">Resolução:</p>
+                            <div class="text-sm pl-4">${generatedData.res.map(step => `<p>• ${step}</p>`).join('')}</div>
+                        </div>
+                    `;
+                } else {
+                    resultContainer.innerHTML = `<p class="text-center text-red-500 font-semibold">Ocorreu um erro ao gerar a questão. Tente novamente.</p>`;
+                }
+                button.textContent = '✨ Criar Questão Similar';
+                button.disabled = false;
+            });
+
+             document.body.addEventListener('click', async function(event) {
+                const button = event.target.closest('.gemini-explain-btn');
+                if (!button) return;
+
+                const card = button.closest('.question-card');
+                const resultContainer = card.querySelector('.gemini-explanation-container');
+                const questionId = card.dataset.id;
+                const [ano, qIndex] = questionId.split('_');
+                const originalQuestion = fullQuestionsData[`ano${ano}`][qIndex-1];
+
+                button.textContent = 'Explicando...';
+                button.disabled = true;
+                resultContainer.classList.remove('hidden');
+                resultContainer.innerHTML = `<p class="text-center text-slate-500">Aguarde, a IA está elaborando a explicação...</p>`;
+
+                const generatedData = await callGeminiAPI(originalQuestion, 'explain');
+
+                if (generatedData && generatedData.explanation) {
+                    resultContainer.innerHTML = `
+                        <div class="gemini-card mt-4 border-2 border-dashed border-[#FFB300] bg-yellow-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-[#b48f33] mb-2">✨ Conceito Chave (Explicado pelo Gemini)</h4>
+                            <p class="text-slate-800">${generatedData.explanation}</p>
+                        </div>
+                    `;
+                } else {
+                    resultContainer.innerHTML = `<p class="text-center text-red-500 font-semibold">Ocorreu um erro ao gerar a explicação. Tente novamente.</p>`;
+                }
+                button.textContent = '✨ Explicar Conceito Chave';
+                button.disabled = false;
+            });
+            
+            const gabaritoSelect = document.getElementById('gabarito-select');
+            gabaritoSelect.addEventListener('change', (event) => {
+                const selectedAno = event.target.value;
+                document.querySelectorAll('#gabarito-content-container > div').forEach(div => {
+                    div.classList.add('hidden');
+                });
+                document.getElementById(`gabarito-${selectedAno}`).classList.remove('hidden');
+            });
+
+            document.getElementById('download-pdf-btn').addEventListener('click', () => {
+                const { jsPDF } = window.jspdf;
+                const selectedAnoId = gabaritoSelect.value;
+                const selectedAnoText = gabaritoSelect.options[gabaritoSelect.selectedIndex].text;
+                
+                const pdfContainer = document.createElement('div');
+                pdfContainer.style.position = 'absolute';
+                pdfContainer.style.left = '-9999px';
+                pdfContainer.style.background = 'white';
+                pdfContainer.style.padding = '20px';
+                pdfContainer.style.width = '210mm';
+
+                const header = document.createElement('h2');
+                header.textContent = `Gabarito - Prova Paraná 2ª Ed 2025 - Matemática`;
+                header.style.textAlign = 'center';
+                header.style.fontSize = '14pt';
+                header.style.marginBottom = '10px';
+                pdfContainer.appendChild(header);
+
+                const subheader = document.createElement('h3');
+                subheader.textContent = selectedAnoText;
+                subheader.style.textAlign = 'center';
+                subheader.style.fontSize = '12pt';
+                subheader.style.marginBottom = '20px';
+                pdfContainer.appendChild(subheader);
+
+                const contentArea = document.createElement('div');
+                contentArea.style.display = 'flex';
+                contentArea.style.flexWrap = 'wrap';
+                contentArea.style.justifyContent = 'center';
+                contentArea.style.fontSize = '8pt';
+
+                const yearsToPrint = selectedAnoId === 'todos' ? ['ano6', 'ano7', 'ano8', 'ano9'] : [selectedAnoId];
+
+                yearsToPrint.forEach(anoKey => {
+                    const anoDiv = document.createElement('div');
+                    anoDiv.style.width = '50%';
+                    anoDiv.style.boxSizing = 'border-box';
+                    anoDiv.style.padding = '10px';
+
+                    const anoTitle = document.createElement('h4');
+                    anoTitle.textContent = `${anoKey.replace('ano', '')}º Ano`;
+                    anoTitle.style.fontSize = '10pt';
+                    anoTitle.style.fontWeight = 'bold';
+                    anoTitle.style.marginBottom = '5px';
+                    anoDiv.appendChild(anoTitle);
+
+                    const list = document.createElement('ol');
+                    list.style.listStyle = 'none';
+                    list.style.paddingLeft = '0';
+                    list.style.display = 'grid';
+                    list.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                    list.style.gap = '2px';
+
+                    fullQuestionsData[anoKey].forEach((q, qIndex) => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `${qIndex + 1} - <b style="color: #0033A0;">${q.r.toUpperCase()}</b>`;
+                        list.appendChild(listItem);
+                    });
+                    anoDiv.appendChild(list);
+                    contentArea.appendChild(anoDiv);
+                });
+
+                pdfContainer.appendChild(contentArea);
+                document.body.appendChild(pdfContainer);
+
+                html2canvas(pdfContainer, { scale: 3 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+                    pdf.save(`Gabarito_${selectedAnoText.replace(/ /g, '_')}.pdf`);
+                    document.body.removeChild(pdfContainer);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

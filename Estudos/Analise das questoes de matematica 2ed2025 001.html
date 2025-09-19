@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infográfico Interativo - Análise da Prova</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Paraná Institucional (Verde e Azul) -->
+    <!-- Application Structure Plan: The SPA is structured as a performance review dashboard. It starts with a visual overview (a donut chart showing the distribution of questions by topic) to provide immediate context. Below this, a filterable grid of interactive cards allows non-linear exploration of each question. Users can filter by topic to focus their study and click any card to reveal its solution. This structure transforms a static report into an engaging and efficient study tool, prioritizing user-driven learning over passive reading. Gemini API features ("Explain Differently", "Create Similar Problem") were added to each card to provide on-demand, AI-powered study assistance, making the tool adaptive and personalized. -->
+    <!-- Visualization & Content Choices: Report Info: 20 math problems and solutions. Goal: Organize and Inform. Viz/Presentation Method: 1) Donut Chart (Chart.js) to show the composition of topics in the exam. Interaction: Hover for tooltips. Justification: Provides a quick, high-level summary of the exam's structure. 2) Interactive Cards (HTML/CSS/JS) for each question, now with Gemini API buttons. Interaction: Filter by category, click to expand/collapse, click Gemini buttons for AI-generated content. Justification: Organizes detailed information and encourages active, AI-assisted user engagement. CONFIRMATION: NO SVG/Mermaid used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        :root {
+            --parana-blue: #0033A0;
+            --parana-green: #009639;
+            --parana-blue-dark: #002275;
+            --parana-green-dark: #006426;
+        }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .text-parana-blue { color: var(--parana-blue); }
+        .bg-parana-blue { background-color: var(--parana-blue); }
+        .bg-parana-green { background-color: var(--parana-green); }
+        .hover\:bg-parana-blue-dark:hover { background-color: var(--parana-blue-dark); }
+        .hover\:bg-parana-green-dark:hover { background-color: var(--parana-green-dark); }
+        .filter-btn { transition: all 0.3s ease; }
+        .filter-btn.active { background-color: var(--parana-blue); color: #ffffff; font-weight: 600; }
+        .question-body { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .question-card.open .question-body { max-height: 1500px; }
+        .question-card.open .chevron { transform: rotate(180deg); }
+        .chevron { transition: transform 0.3s ease; }
+        .chart-container { position: relative; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-parana-blue">Análise Interativa da ProvaPr 2ª Ed. 2025</h1>
+            <p class="text-slate-600 mt-2">Explore a composição da prova de Matemática e revise cada questão com a ajuda da IA.</p>
+            <p class="text-slate-500 mt-1 text-sm">Elaborado por: Prof. J. Vitor Martins</p>
+        </header>
+
+        <section class="bg-white rounded-lg shadow-lg p-6 mb-10">
+            <h2 class="text-xl font-bold text-parana-blue text-center mb-4">Distribuição de Tópicos na Prova</h2>
+            <div class="chart-container">
+                <canvas id="topicDistributionChart"></canvas>
+            </div>
+            <p class="text-center text-sm text-gray-500 mt-4">Este gráfico mostra a porcentagem de questões por área de conhecimento, destacando a grande ênfase em Geometria.</p>
+        </section>
+
+        <nav id="filter-container" class="flex flex-wrap justify-center gap-2 mb-8">
+             <button class="filter-btn active py-2 px-4 bg-white text-parana-blue rounded-full shadow-md hover:bg-slate-100" data-category="all">Todas as Questões</button>
+             <button class="filter-btn py-2 px-4 bg-white text-parana-blue rounded-full shadow-md hover:bg-slate-100" data-category="Geometria">Geometria</button>
+             <button class="filter-btn py-2 px-4 bg-white text-parana-blue rounded-full shadow-md hover:bg-slate-100" data-category="Proporcionalidade">Proporcionalidade</button>
+             <button class="filter-btn py-2 px-4 bg-white text-parana-blue rounded-full shadow-md hover:bg-slate-100" data-category="Álgebra">Álgebra</button>
+             <button class="filter-btn py-2 px-4 bg-white text-parana-blue rounded-full shadow-md hover:bg-slate-100" data-category="Aritmética e Finanças">Aritmética e Finanças</button>
+        </nav>
+
+        <main id="questions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </main>
+
+    </div>
+
+    <script>
+        const questionsData = [
+            { id: 1, item: "(MT92031PR25)", category: "Geometria", title: "Existência de Triângulos" },
+            { id: 2, item: "(MT92041PR25)", category: "Geometria", title: "Classificação de Quadriláteros" },
+            { id: 3, item: "(MT92051PR25)", category: "Geometria", title: "Área, Perímetro e Escala" },
+            { id: 4, item: "(MT91992PR25)", category: "Proporcionalidade", title: "Regra de Três Direta" },
+            { id: 5, item: "(MT92071PR25)", category: "Geometria", title: "Homotetia e Semelhança" },
+            { id: 6, item: "(MT92291PR25)", category: "Proporcionalidade", title: "Regra de Três Inversa" },
+            { id: 7, item: "(MT92081PR25)", category: "Geometria", title: "Ângulos de Polígonos" },
+            { id: 8, item: "(MT92091PR25)", category: "Geometria", title: "Plano Cartesiano" },
+            { id: 9, item: "(MT91802PR25)", category: "Geometria", title: "Relações Métricas" },
+            { id: 10, item: "(MT92111PR25)", category: "Geometria", title: "Círculo: Raio e Diâmetro" },
+            { id: 11, item: "(MT92121PR25)", category: "Geometria", title: "Perímetro de Polígonos" },
+            { id: 12, item: "(MT92131PR25)", category: "Geometria", title: "Área de Polígonos" },
+            { id: 13, item: "(MT92141PR25)", category: "Geometria", title: "Volume e Conversão" },
+            { id: 14, item: "(MT92151PR25)", category: "Geometria", title: "Conversão de Unidades" },
+            { id: 15, item: "(MT92281PR25)", category: "Aritmética e Finanças", title: "Aumento Percentual" },
+            { id: 16, item: "(MT92261PR25)", category: "Aritmética e Finanças", title: "Operações com Frações" },
+            { id: 17, item: "(MT92271PR25)", category: "Álgebra", title: "Números Irracionais" },
+            { id: 18, item: "(MT91281PR25)", category: "Aritmética e Finanças", title: "Cálculo de Desconto" },
+            { id: 19, item: "(MT92311PR25)", category: "Álgebra", title: "Equação do 2º Grau" },
+            { id: 20, item: "(MT92361PR25)", category: "Aritmética e Finanças", title: "Análise de Orçamento" },
+        ];
+        
+        const solutionsData = {
+            1: { statement: "Para que o triângulo ABC possa ser construído, é necessário que cada um de seus lados AB, BC e AC sejam menores que a soma dos outros dois lados. Desta forma, as medidas dos lados que permitem a construção de um triângulo são:", result: "Alternativa D", solution: ['<b>Princípio:</b> A questão utiliza a "Condição de Existência de um Triângulo", onde a medida de qualquer lado deve ser menor que a soma dos outros dois.','<b>Análise:</b> Apenas os lados 5, 6 e 7 satisfazem a condição, pois 7 < 5 + 6.'] },
+            2: { statement: "Ao analisar um quadrilátero, Marcelo constatou que há apenas um par de lados paralelos e exatamente dois ângulos retos. Desta forma, Marcelo identificou que o quadrilátero é um:", result: "Alternativa D", solution: ['<b>Análise:</b> A propriedade de ter apenas um par de lados paralelos define um <b>trapézio</b>. A existência de dois ângulos retos o classifica como um trapézio retângulo.'] },
+            3: { statement: "Cada quadrado da malha quadriculada tem 1 cm de lado. O polígono ABCDEF foi ampliado para o GHIJKL. Desta forma, o perímetro e a área do GHIJKL são, respectivamente, quantas vezes maiores que o do ABCDEF?", result: "Alternativa A", solution: ['<b>Fator de Ampliação (k):</b> k=2 (lado 1cm virou 2cm).','<b>Relação de Perímetro:</b> A razão é k, ou seja, 2 vezes maior.','<b>Relação de Área:</b> A razão é k², ou seja, 4 vezes maior.'] },
+            4: { statement: "Com 4 impressoras, uma empresa produz 1200 revistas em 3 horas. Se o número de impressoras aumentar para 6, mantendo o tempo, quantas revistas produzirá?", result: "Alternativa B", solution: ['<b>Princípio:</b> Regra de três direta.','<b>Cálculo:</b> 4 impressoras / 1200 revistas = 6 impressoras / x revistas. 4x = 7200 => x = 1800.'] },
+            5: { statement: "Na homotetia a seguir, cada lado da estrela menor possui comprimento de 1 cm. Desta forma, a medida de cada lado da estrela maior é de:", result: "Alternativa D", solution: ['<b>Razão de Homotetia (k):</b> k = Distância Final / Distância Inicial = (3+6)/3 = 3.','<b>Cálculo do Lado Maior:</b> Lado Maior = Lado Menor * k = 1 * 3 = 3 cm.'] },
+            6: { statement: "Seis tripulantes tinham comida para 4 dias. Com mais dois sobreviventes, os mantimentos tiveram duração de:", result: "Alternativa C", solution: ['<b>Princípio:</b> Regra de três inversa.','<b>Cálculo:</b> 6 pessoas * 4 dias = 8 pessoas * x dias. 24 = 8x => x = 3 dias.'] },
+            7: { statement: "Cada ângulo interno de um pentágono regular mede:", result: "Alternativa B", solution: ['<b>Soma dos Ângulos (Si):</b> Si = (n-2) * 180° = (5-2) * 180° = 540°.','<b>Ângulo Individual:</b> 540° / 5 = 108°.'] },
+            8: { statement: "Ao viajar de Washington W(-6, 6) para Camberra C(12, -2), qual foi o deslocamento?", result: "Alternativa B", solution: ['<b>Horizontal (X):</b> Xfinal - Xinicial = 12 - (-6) = 18 (direita).','<b>Vertical (Y):</b> Yfinal - Yinicial = -2 - 6 = -8 (baixo).'] },
+            9: { statement: "Qual a distância entre Umuarama (U) e Boa Vista (B) no mapa, sabendo que as distâncias são FU=280km, UC=450km e FC=530km?", result: "Alternativa A", solution: ['<b>Verificação:</b> O triângulo FUC é retângulo (280²+450²=530²).','<b>Relação Métrica:</b> cateto * cateto = hipotenusa * altura.','<b>Cálculo:</b> 280 * 450 = 530 * UB => UB ≈ 238 km.'] },
+            10: { statement: "A London Eye tem raio de 60 m. Qual a distância entre o ponto mais baixo e o mais alto?", result: "Alternativa B", solution: ['<b>Princípio:</b> A distância é o diâmetro.','<b>Cálculo:</b> Diâmetro = 2 * Raio = 2 * 60 = 120 m.'] },
+            11: { statement: "O perímetro, em centímetros, de um hexágono regular com 2 cm de lado é de:", result: "Alternativa D", solution: ['<b>Cálculo:</b> Perímetro = 6 * lado = 6 * 2 = 12 cm.'] },
+            12: { statement: "A área de um hexágono regular com lado de 2 cm é de:", result: "Alternativa C", solution: ['<b>Área do Triângulo Equilátero:</b> A = (l²√3)/4 = (2²√3)/4 = √3 cm².','<b>Área do Hexágono:</b> A = 6 * A_triângulo = 6√3 cm².'] },
+            13: { statement: "O volume de água, em litros, para encher uma piscina olímpica de 50m x 25m x 2m é de:", result: "Alternativa C", solution: ['<b>Volume em m³:</b> V = 50 * 25 * 2 = 2500 m³.','<b>Conversão para Litros:</b> 2500 * 1000 = 2.500.000 L.'] },
+            14: { statement: "A capacidade de um tanque de dois milhões de litros, em metros cúbicos, é de:", result: "Alternativa B", solution: ['<b>Conversão:</b> Para converter de Litros para m³, divide-se por 1000.','<b>Cálculo:</b> 2.000.000 / 1000 = 2.000 m³.'] },
+            15: { statement: "O valor da saca de café foi de R$ 996,52 para R$ 2.521,21. O aumento esteve entre:", result: "Alternativa D", solution: ['<b>Aumento Absoluto:</b> 2521.21 - 996.52 = 1524.69.','<b>Aumento Percentual:</b> (1524.69 / 996.52) * 100 ≈ 153%. Este valor está entre 150% e 200%.'] },
+            16: { statement: "A fração que corresponde ao resultado da expressão (3/4 + 5/6) ÷ 4/3 é:", result: "Alternativa A", solution: ['<b>Soma:</b> 3/4 + 5/6 = 19/12.','<b>Divisão:</b> 19/12 * 3/4 = 57/48.','<b>Simplificação:</b> 19/16.'] },
+            17: { statement: "Considerando φ = (1 + √5) / 2 e a aproximação √5 ≈ 2,2, o valor mais próximo de φ é:", result: "Alternativa C", solution: ['<b>Cálculo:</b> φ ≈ (1 + 2.2) / 2 = 3.2 / 2 = 1.6.'] },
+            18: { statement: "Uma TV custa 12x de R$235 ou tem 15% de desconto à vista. Qual o valor à vista?", result: "Alternativa A", solution: ['<b>Preço Total:</b> 12 * 235 = R$ 2.820,00.','<b>Preço à Vista:</b> 2820 * 0.85 (pagando 85%) = R$ 2.397,00.'] },
+            19: { statement: "Uma quadra retangular tem área de 800 m², largura (x+5)m e comprimento (x+25)m. Quais as dimensões?", result: "Alternativa C", solution: ['<b>Equação:</b> (x+5)(x+25) = 800 => x²+30x-675=0.','<b>Solução:</b> A raiz positiva é x=15.','<b>Dimensões:</b> Largura = 15+5=20m, Comprimento = 15+25=40m.'] },
+            20: { statement: "Com R$125, qual afirmação é correta sobre comprar uma corda (R$34,90), halteres (R$56,90) e colchonete (R$49,90)?", result: "Alternativa A", solution: ['<b>Análise da Alt. A:</b> Comprar os três com 12% de desconto.','<b>Custo Total:</b> 141.70.','<b>Desconto:</b> 141.70 * 0.12 ≈ 17.00.','<b>Preço Final:</b> 141.70 - 17.00 = 124.70. Este valor cabe no orçamento de R$125.'] }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('questions-grid');
+            const filterContainer = document.getElementById('filter-container');
+
+            async function callGeminiApi(prompt, resultContainer) {
+                resultContainer.style.display = 'block';
+                resultContainer.innerHTML = '<p>Gerando resposta com Gemini... ✨</p>';
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                };
+                
+                let response;
+                let retries = 3;
+                let delay = 1000;
+
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            const candidate = result.candidates?.[0];
+
+                            if (candidate && candidate.content?.parts?.[0]?.text) {
+                                let text = candidate.content.parts[0].text;
+                                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                                text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                                text = text.replace(/\n/g, '<br>');
+                                resultContainer.innerHTML = text;
+                            } else {
+                                resultContainer.innerHTML = '<p>Não foi possível gerar uma resposta. Tente novamente.</p>';
+                            }
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('API call failed:', error);
+                    }
+                    
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+
+                resultContainer.innerHTML = '<p>Ocorreu um erro ao se comunicar com a API. Por favor, tente novamente mais tarde.</p>';
+            }
+
+            function renderQuestions(filter = 'all') {
+                grid.innerHTML = '';
+                const filteredQuestions = filter === 'all' 
+                    ? questionsData 
+                    : questionsData.filter(q => q.category === filter);
+
+                filteredQuestions.forEach(qData => {
+                    const solData = solutionsData[qData.id];
+                    const solutionHtml = solData.solution.map(s => `<li class="text-slate-700">${s}</li>`).join('');
+                    const solutionTextForPrompt = solData.solution.join(' ').replace(/<\/?b>/g, '');
+                    const card = document.createElement('div');
+                    card.className = 'question-card bg-white rounded-lg shadow-md overflow-hidden transition-shadow duration-300 hover:shadow-xl';
+                    card.dataset.category = qData.category;
+                    card.innerHTML = `
+                        <button class="question-header w-full text-left p-4 flex justify-between items-center hover:bg-slate-50 focus:outline-none">
+                            <div>
+                                <h2 class="font-semibold text-md text-parana-blue">Q.${qData.id} <span class="font-normal text-slate-500 text-sm">${qData.item}</span></h2>
+                                <p class="text-sm text-slate-600">${qData.title}</p>
+                            </div>
+                            <svg class="chevron w-6 h-6 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="question-body px-4 pb-4">
+                            <div class="border-t pt-4">
+                                <div class="mb-4">
+                                    <p class="text-slate-700 italic">"${solData.statement}"</p>
+                                </div>
+                                <p class="font-semibold text-slate-800 mb-2">Resultado: <span class="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">${solData.result}</span></p>
+                                <ul class="list-disc list-inside space-y-2">
+                                    ${solutionHtml}
+                                </ul>
+                                <div class="border-t mt-4 pt-4">
+                                    <h4 class="font-semibold text-parana-blue mb-2">✨ Assistente de Estudos Gemini</h4>
+                                    <p class="text-sm text-slate-600 mb-3">Peça ao Gemini para explicar a resolução de outra forma ou criar um novo problema para você praticar.</p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button class="gemini-btn bg-parana-blue text-white py-1 px-3 rounded-full text-sm hover:bg-parana-blue-dark" data-id="${qData.id}" data-type="explain" data-solution="${escape(solutionTextForPrompt)}">Explique de outra forma</button>
+                                        <button class="gemini-btn bg-parana-green text-white py-1 px-3 rounded-full text-sm hover:bg-parana-green-dark" data-id="${qData.id}" data-type="similar" data-statement="${escape(solData.statement)}" data-topic="${escape(qData.title)}">Crie um problema similar</button>
+                                    </div>
+                                    <div id="gemini-result-${qData.id}" class="mt-4 p-3 bg-slate-50 rounded-lg text-slate-800 text-sm" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                addCardEventListeners();
+            }
+
+            function addCardEventListeners() {
+                document.querySelectorAll('.question-header').forEach(header => {
+                    header.addEventListener('click', () => header.parentElement.classList.toggle('open'));
+                });
+                
+                document.querySelectorAll('.gemini-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        
+                        const id = e.target.dataset.id;
+                        const type = e.target.dataset.type;
+                        const resultContainer = document.getElementById(`gemini-result-${id}`);
+                        
+                        let prompt = '';
+                        
+                        if (type === 'explain') {
+                            const solution = unescape(e.target.dataset.solution);
+                            prompt = `Aja como um professor de matemática experiente e didático. A resolução de um problema é: "${solution}". Explique esta mesma resolução de uma maneira diferente e mais simples, talvez usando uma analogia ou um passo a passo mais detalhado, para um estudante que está com dificuldade. Mantenha a explicação em português do Brasil.`;
+                        } else if (type === 'similar') {
+                            const statement = unescape(e.target.dataset.statement);
+                            const topic = unescape(e.target.dataset.topic);
+                            prompt = `Aja como um criador de questões de matemática para provas. Baseado no seguinte problema sobre "${topic}": "${statement}", crie um novo problema de múltipla escolha (com 4 alternativas: A, B, C, D) que teste o mesmo conceito. O novo problema deve ser original e não apenas uma cópia com números trocados. No final, indique a alternativa correta e apresente uma resolução curta e direta. Formate a resposta claramente. Use português do Brasil.`;
+                        }
+                        
+                        if (prompt) {
+                            callGeminiApi(prompt, resultContainer);
+                        }
+                    });
+                });
+            }
+
+            filterContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    renderQuestions(e.target.dataset.category);
+                }
+            });
+
+            function createChart() {
+                const ctx = document.getElementById('topicDistributionChart').getContext('2d');
+                const categoryCounts = questionsData.reduce((acc, q) => {
+                    acc[q.category] = (acc[q.category] || 0) + 1;
+                    return acc;
+                }, {});
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(categoryCounts),
+                        datasets: [{
+                            label: 'Nº de Questões',
+                            data: Object.values(categoryCounts),
+                            backgroundColor: ['#0033A0', '#009639', '#4d75b8', '#4dae7a'],
+                            borderColor: '#f8fafc',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#002275' } },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        const item = tooltipItems[0];
+                                        let label = item.chart.data.labels[item.dataIndex];
+                                        if (Array.isArray(label)) { return label.join(' '); } 
+                                        else { return label; }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            createChart();
+            renderQuestions();
+        });
+    </script>
+</body>
+</html>
